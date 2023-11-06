@@ -1,0 +1,118 @@
+from webexteamssdk import WebexTeamsAPI
+import requests 
+
+# Initialize the Webex Teams API using your token
+webex_token = input("Enter your Webex Token: ")
+api = WebexTeamsAPI(access_token=webex_token)
+
+# Option 0
+def test_connection():
+    try:
+        me = api.people.me()
+        print("Connection with Webex server successful.")
+    except Exception as e:
+        print(f"Connection failed: {str(e)}")
+
+    input("Press enter to return to the menu")
+
+# Option 1
+def display_user_info():
+    me = api.people.me()
+    print("Display:")
+    print("Name:", me.displayName)
+    print("Nickname:", me.nickName)
+    print("Emails:", me.emails)
+    input("Press enter to return to the menu")
+
+# Option 2
+def list_rooms():
+    # Convert the generator to a list
+    rooms = list(api.rooms.list()) 
+    print("List of Rooms:")
+    for i, room in enumerate(rooms):
+        print(f"{i+1}. Room ID: {room.id}")
+        print(f"   Room Title: {room.title}")
+        print(f"   Date Created: {room.created}")
+        print(f"   Last Activity: {room.lastActivity}")
+    
+    input("Press Enter to return to the menu")
+
+# Option 3
+def create_room():
+    title = input("Enter the title of the room: ")
+    try:
+        api.rooms.create(title)
+        print("Room created successfully.")
+    except Exception as e:
+        print(f"Room creation failed: {str(e)}")
+    input("Press Enter to return to the menu")
+
+# Option 4
+def send_message():
+    # Convert the generator to a list
+    rooms = list(api.rooms.list()) 
+    print("Select a room to send a message:")
+    for i, room in enumerate(rooms):
+        print(f"{i+1}. {room.title}")
+
+    try:
+        room_choice = int(input("Enter the room number: "))
+        if 1 <= room_choice <= len(rooms):
+            # Access the room directly from the list
+            room = rooms[room_choice - 1]
+            
+            message = input("Enter the message to send: ")
+            
+            # Use the token you've collected
+            access_token = webex_token
+
+            url = 'https://webexapis.com/v1/messages'
+
+            headers = {
+                'Authorization': f'Bearer {access_token}',
+                'Content-Type': 'application/json'
+            }
+
+            params = {'roomId': room.id, 'markdown': message}
+
+            res = requests.post(url, headers=headers, json=params)
+            if res.status_code == 200:
+                print("Message sent successfully.")
+            else:
+                print(f"Failed to send the message. Status Code: {res.status_code}")
+        else:
+            print("Invalid room choice. Please select a valid room number.")
+    except ValueError:
+        print("Invalid input. Please enter a valid room number.")
+
+    input("Press Enter to return to the menu")
+
+# Main menu loop
+while True:
+    print("Menu Options:")
+    print("0. Test Connection")
+    print("1. Display User Info")
+    print("2. List Of Rooms")
+    print("3. Create A Room")
+    print("4. Send Message to Room")
+    print("5. Exit")
+
+    option = input("Select an option: ")
+    
+    if option == '0':
+        test_connection()
+    elif option == '1':
+        display_user_info()
+    elif option == '2':
+        list_rooms()
+    elif option == '3':
+        create_room()
+    elif option == '4':
+        send_message()
+    elif option == '5':
+        break
+    else:
+        print("Invalid option. Please choose a valid option.")
+
+
+#End of the program
